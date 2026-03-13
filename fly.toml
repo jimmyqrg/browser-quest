@@ -1,4 +1,4 @@
-app = "browserquest"
+app = "browser-quest"
 primary_region = "sjc"
 
 [build]
