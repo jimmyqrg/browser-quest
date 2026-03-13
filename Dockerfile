@@ -4,7 +4,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# install dependencies with legacy resolution for old packages
+# Replace the dead dependency
+RUN sed -i 's/"websocket-server":.*$/"ws": "^8.13.0",/' package.json
+
+# Install deps
 RUN npm install --legacy-peer-deps
 
 COPY . .
