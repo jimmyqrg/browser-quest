@@ -1,13 +1,10 @@
-FROM node:14-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
 
-# Replace the dead dependency
-RUN sed -i 's/"websocket-server":.*$/"ws": "^8.13.0",/' package.json
-
-# Install deps
+# Install deps (no sed hack)
 RUN npm install --legacy-peer-deps
 
 COPY . .
