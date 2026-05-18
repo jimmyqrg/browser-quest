@@ -1,6 +1,8 @@
 
 var cls = require("./lib/class"),
     url = require('url'),
+    pathModule = require('path'),
+    fs = require('fs'),
     wsserver = require("websocket-server"),
     miksagoConnection = require('websocket-server/lib/ws/connection'),
     worlizeRequest = require('websocket').request,
@@ -12,6 +14,8 @@ var cls = require("./lib/class"),
     useBison = false;
 
 module.exports = WS;
+
+var clientRoot = pathModule.join(__dirname, '..', '..', 'client');
 
 
 /**
@@ -118,18 +122,51 @@ WS.MultiVersionWebsocketServer = Server.extend({
         this._super(port);
         
         this._httpServer = http.createServer(function(request, response) {
-            var path = url.parse(request.url).pathname;
-            switch(path) {
-                case '/status':
-                    if(self.status_callback) {
-                        response.writeHead(200);
-                        response.write(self.status_callback());
-                        break;
-                    }
-                default:
-                    response.writeHead(404);
+            var pathName = url.parse(request.url).pathname;
+
+            // WebSocket upgrade handled separately
+            if (pathName === '/ws' || request.headers.upgrade) {
+                return;
             }
-            response.end();
+
+            // Status endpoint
+            if (pathName === '/status') {
+                if(self.status_callback) {
+                    response.writeHead(200);
+                    response.write(self.status_callback());
+                } else {
+                    response.writeHead(404);
+                }
+                response.end();
+                return;
+            }
+
+            // Static file serving
+            var filePath = pathModule.join(clientRoot, pathName === '/' ? 'index.html' : pathName);
+            fs.readFile(filePath, function(err, data) {
+                if (err) {
+                    response.writeHead(404);
+                    response.end('Not Found');
+                    return;
+                }
+                var ext = pathModule.extname(filePath);
+                var contentType = {
+                    '.html': 'text/html',
+                    '.js': 'application/javascript',
+                    '.css': 'text/css',
+                    '.json': 'application/json',
+                    '.png': 'image/png',
+                    '.jpg': 'image/jpeg',
+                    '.gif': 'image/gif',
+                    '.svg': 'image/svg+xml',
+                    '.mp3': 'audio/mpeg',
+                    '.ogg': 'audio/ogg',
+                    '.woff': 'font/woff',
+                    '.woff2': 'font/woff2'
+                }[ext] || 'application/octet-stream';
+                response.writeHead(200, {'Content-Type': contentType});
+                response.end(data);
+            });
         });
         this._httpServer.listen(port, function() {
             log.info("Server is listening on port "+port);
