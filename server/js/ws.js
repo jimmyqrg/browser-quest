@@ -16,6 +16,7 @@ var cls = require("./lib/class"),
 module.exports = WS;
 
 var clientRoot = pathModule.join(__dirname, '..', '..', 'client');
+var sharedRoot = pathModule.join(__dirname, '..', '..', 'shared');
 
 
 /**
@@ -143,6 +144,24 @@ WS.MultiVersionWebsocketServer = Server.extend({
 
             // Static file serving
             var filePath = pathModule.join(clientRoot, pathName === '/' ? 'index.html' : pathName);
+            // Fallback to shared folder if not found in client
+            if (!fs.existsSync(filePath)) {
+                var sharedPath = pathModule.join(sharedRoot, pathName);
+                if (fs.existsSync(sharedPath)) {
+                    filePath = sharedPath;
+                } else {
+                    // Map /js/ paths to shared/js/ for gametypes and other shared modules
+                    var sharedPath2 = pathModule.join(sharedRoot, pathName.replace(/^\/js\//, 'js/'));
+                    if (fs.existsSync(sharedPath2)) {
+                        filePath = sharedPath2;
+                    }
+                }
+            }
+            if (!fs.existsSync(filePath)) {
+                response.writeHead(404);
+                response.end('Not Found');
+                return;
+            }
             fs.readFile(filePath, function(err, data) {
                 if (err) {
                     response.writeHead(404);
