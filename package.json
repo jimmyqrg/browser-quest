@@ -7,8 +7,9 @@
     , "log": "*"
     , "bison": "*"
     , "websocket": "*"
-    , "websocket-server": "*"
+    , "ws": "*"
     , "sanitizer": "*"
     , "memcache": "*"
+    , "websocket-server": "miksago/node-websocket-server"
   }
 }
