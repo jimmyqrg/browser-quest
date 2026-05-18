@@ -32,6 +32,8 @@ function main(config) {
             log = new Log(Log.DEBUG); break;
         case "info":
             log = new Log(Log.INFO); break;
+        default:
+            log = new Log(Log.INFO); break;
     };
     
     log.info("Starting BrowserQuest game server...");
