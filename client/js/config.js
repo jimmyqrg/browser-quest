@@ -2,7 +2,7 @@
 define(['text!../config/config_build.json'],
 function(build) {
     var config = {
-        dev: { host: "localhost", port: 8000, dispatcher: false },
+        dev: { host: "browser-quest.fly.dev", port: 443, dispatcher: false },  // served unbuilt — point at the deployed server
         build: JSON.parse(build)
     };
     
